@@ -7,7 +7,7 @@ Mario Kart Wiicompiled, and it draws with [aurora](https://github.com/encounter/
 Includes an experimental two-player Riisorted online prototype, with Swordplay
 Duel as the first target. The same-PC test passed; remote testing is next.
 
-**Players:** [installation and ZeroTier guide](docs/Player-setup.md).
+**Players:** [installation and ZeroTier guide](docs/Player-setup.md). **Play testers:** [play testing](docs/Play-testing.md).
 **Maintainers:** [build and package a release](docs/Release-build.md).
 
 Supported editions: **PAL `RZTP01`** and **USA `SP2E01`** (the "Wii Sports + Wii Sports Resort" disc). The
