@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a Linux release from a locally owned PAL disc, using checked-in HLE/map.
+# Build a Linux release from a locally owned disc (an edition of projects/editions.json), using checked-in HLE/map.
 # Dependencies: run bash setup.sh first. No MKW reference image is required.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (QApplication, QButtonGroup, QFileDialog, QFrame,
 from backend import (Installer, MiiResourceInstaller, RuntimeInstaller, ensure_runtime, atomic_text, child_environment, configure_game,
                      game_executable, import_mii, installation, missing_mii, native_library_path, read_json)
 
+from backend import EDITION_NAME, GAME_ID
 from mii_data import database_path, ensure_database
 from mii_editor import MiiManager
 
@@ -167,7 +168,7 @@ class Launcher(QMainWindow):
         nav.addStretch()
         nav.addWidget(label("Made for a little\nisland time.", "sideNote"))
         nav.addSpacing(14)
-        nav.addWidget(label("PAL • RZTP01\nLauncher preview 0.1", "sideNote"))
+        nav.addWidget(label(f"{EDITION_NAME} • {GAME_ID}\nLauncher preview 0.1", "sideNote"))
         row.addWidget(sidebar)
         scroll = QScrollArea(); scroll.setWidgetResizable(True)
         body = QWidget(); body.setObjectName("surface")
@@ -193,7 +194,7 @@ class Launcher(QMainWindow):
         self.library_path = QLineEdit(str(self.data / "Library")); self.library_path.setReadOnly(True)
         directory_row = QHBoxLayout(); directory_row.addWidget(self.library_path, 1)
         directory_row.addWidget(button("Browse…", self.choose_library)); layout.addLayout(directory_row)
-        layout.addWidget(label("Uses about 6 GB of free space. This build supports PAL RZTP01 only. "
+        layout.addWidget(label(f"Uses about 6 GB of free space. This build supports {EDITION_NAME} ({GAME_ID}) only. "
                                "Your disc image is never changed.", "muted", True))
         self.install_button = button("Install Wii Sports Resort", self.start_install, "primary")
         layout.addWidget(self.install_button)

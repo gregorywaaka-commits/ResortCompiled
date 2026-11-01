@@ -1,0 +1,30 @@
+# PAL address -> US (SP2E01) address of the runtime, for addresses that the address tables do not hold.
+# "KEEP" keeps the PAL address. Read by scripts/port_runtime.py --make-table.
+
+# Checked in the US code:
+800FF564 800FFB20   # RFLiIsWorking body (r13 RFL manager, +0x1B34)
+806F4C70 806F6B88   # MotionPlus solver work pointer (r13): its 34 users step by the 3504-byte channel size
+807083D0 8070A4B0   # WPAD control block pointers: loaded by WPADGetMplsCalibration, WPADControlMpls, WPADGetMplsStatus
+8076A718 80770240   # KPAD state base: loaded by KPADReadEx and KPADGetUnifiedWpadStatus
+807E9080 807EEBF8   # __ArenaLo: the first lis/addi of OSInit, 0x12000 above the end of bss (as in PAL)
+
+# Mario Kart Wii addresses in inactive or guarded paths, and MEM1 constants: the same in every edition.
+80717150 KEEP       # Audio__Manager__Init name in a comment (Mario Kart Wii)
+8071724C KEEP       # Audio__Manager__InitSelf name in a comment (Mario Kart Wii)
+80808081 KEEP       # a byte pattern, not an address
+8088F400 KEEP       # Mario Kart Wii StaticR constructors
+8088F704 KEEP
+8088FDB8 KEEP       # Mario Kart Wii audio system table
+808B4C20 KEEP       # Mario Kart Wii screen vtable
+809BEBA0 KEEP       # Mario Kart Wii THP state
+809BEBA4 KEEP
+809BEBA5 KEEP
+809BEBA6 KEEP
+809BEBA7 KEEP
+809BECF0 KEEP
+809C1830 KEEP       # Mario Kart Wii draw lists
+809C183C KEEP
+809C2898 KEEP       # Mario Kart Wii sound manager pointer
+81700000 KEEP       # MEM1 constants
+817F0520 KEEP
+81800000 KEEP

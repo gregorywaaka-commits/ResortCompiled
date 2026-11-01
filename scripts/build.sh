@@ -30,13 +30,30 @@ while [[ $# -gt 0 ]]; do
 done
 
 die() { echo "[error] $*" >&2; exit 1; }
-[[ -f "$ROOT/runtime/wsr/CMakeLists.txt" ]] || die "runtime/wsr not generated - run: python3 scripts/rekey.py"
+# Linux, or Windows in an MSYS2 CLANG64 shell (docs/Windows-native-build.md).
+WINDOWS_HOST=0
+if [[ "$(uname -o 2>/dev/null)" == "Msys" ]]; then
+  WINDOWS_HOST=1
+  # CMake takes CMAKE_SYSTEM_PROCESSOR from this variable; an MSYS2 login shell can drop it.
+  export PROCESSOR_ARCHITECTURE="${PROCESSOR_ARCHITECTURE:-AMD64}"
+fi
+link_dir() {  # link_dir <target> <link>: a symlink, or on Windows a junction (no admin rights needed)
+  if [[ $WINDOWS_HOST -eq 1 ]]; then
+    # rmdir removes only the junction, never the folder it points to.
+    if [[ -L "$2" ]]; then MSYS2_ARG_CONV_EXCL="*" cmd.exe /c rmdir "$(cygpath -w "$2")"; elif [[ -e "$2" ]]; then rm -rf "$2"; fi
+    MSYS2_ARG_CONV_EXCL="*" cmd.exe /c mklink /J "$(cygpath -w "$2")" "$(cygpath -w "$1")" >/dev/null
+  else
+    ln -sfn "$1" "$2"
+  fi
+}
+RUNTIME="$ROOT/$(python3 "$ROOT/scripts/editions.py" get runtime)"
+[[ -f "$RUNTIME/CMakeLists.txt" ]] || die "${RUNTIME#$ROOT/} missing - run: python3 scripts/configure_project.py"
 [[ -f "$ROOT/work/generated/build_shards/shards.cmake" ]] || die "no translated code - run: bash scripts/translate.sh"
 [[ -d "$WC/aurora-main" ]] || die "WiiCompiled checkout missing - run: bash setup.sh"
 for t in clang clang++ cmake ninja rsync; do command -v "$t" >/dev/null || die "$t not found (run setup.sh)"; done
 
 # The translated code is ~500 MB of C++; each clang job can take 1-2 GB of RAM on the big shards.
-MEM_GB=$(awk '/MemTotal/{printf "%d", $2/1048576}' /proc/meminfo)
+MEM_GB=$(awk '/MemTotal/{printf "%d", $2/1048576}' /proc/meminfo 2>/dev/null || echo 8)
 MAX_BY_MEM=$(( MEM_GB / 2 > 0 ? MEM_GB / 2 : 1 ))
 TRANSLATED_JOBS=$(( JOBS < MAX_BY_MEM ? JOBS : MAX_BY_MEM ))
 
@@ -44,10 +61,10 @@ if [[ $CLEAN -eq 1 ]]; then rm -rf "$TREE" "$BUILD"; fi
 
 echo "==> Assembling build tree in work/tree"
 mkdir -p "$TREE/runtime"
-rsync -a --delete --exclude third_party --exclude assets "$ROOT/runtime/wsr/" "$TREE/runtime/"
+rsync -a --delete --exclude third_party --exclude assets "$RUNTIME/" "$TREE/runtime/"
 rsync -a "$WC/runtime/third_party" "$WC/runtime/assets" "$TREE/runtime/"
-ln -sfn "$ROOT/work/generated" "$TREE/generated"
-ln -sfn "$WC/aurora-main" "$TREE/aurora-main"
+link_dir "$ROOT/work/generated" "$TREE/generated"
+link_dir "$WC/aurora-main" "$TREE/aurora-main"
 
 python3 "$ROOT/scripts/netplay_build_identity.py" --output "$ROOT/work/netplay-simulation-id.txt"
 SIMULATION_ID="$(cat "$ROOT/work/netplay-simulation-id.txt")"
@@ -75,9 +92,16 @@ if [[ $rc -ne 0 ]]; then
   exit $rc
 fi
 
-if [[ -f "$BUILD/$TARGET" ]]; then
+EXE=""
+[[ -f "$BUILD/$TARGET.exe" ]] && EXE=".exe"
+if [[ -f "$BUILD/$TARGET$EXE" ]]; then
   mkdir -p "$OUT"
-  cp -f "$BUILD/$TARGET" "$OUT/Resortcompiled"
+  cp -f "$BUILD/$TARGET$EXE" "$OUT/Resortcompiled$EXE"
+  if [[ -n "$EXE" ]]; then
+    # The DLLs of the build (Dawn, SDL) and of the CLANG64 C++ runtime go next to the exe.
+    find "$BUILD" -maxdepth 1 -name '*.dll' -exec cp -f {} "$OUT/" \;
+    for dll in $(ldd "$OUT/Resortcompiled$EXE" | awk '$3 ~ /clang64/ {print $3}'); do cp -f "$dll" "$OUT/"; done
+  fi
   for f in dsp_coef.bin initial_pipeline_cache.db cacert.pem; do
     [[ -f "$BUILD/$f" ]] && cp -f "$BUILD/$f" "$OUT/"
   done
@@ -94,7 +118,7 @@ if [[ -f "$BUILD/$TARGET" ]]; then
     printf '%s\n' \
       "# Resortcompiled user configuration (WiiCompiled runtime format; F10 in-game edits this file)" \
       "[paths]" \
-      "dvd_root = \"$ROOT/work/extracted\"" > "$OUT/UserData/Config.toml"
+      "dvd_root = \"$(python3 "$ROOT/scripts/editions.py" root)\"" > "$OUT/UserData/Config.toml"
   fi
-  echo "==> Built out/Resortcompiled  (run: ./out/Resortcompiled ; config and logs in out/UserData/)"
+  echo "==> Built out/Resortcompiled$EXE  (run: ./out/Resortcompiled$EXE ; config and logs in out/UserData/)"
 fi

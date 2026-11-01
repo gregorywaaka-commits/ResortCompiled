@@ -21,8 +21,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'launcher'))
 from runtime_identity import simulation_identity
 LAUNCHER = ROOT / "launcher"
-GAME_ID = "RZTP01"
-DOL_SHA256 = "855e4ffe4f8d69d172c44b05ec3a4ddb89645bebfadca41c98effab69111d448"
+sys.path.insert(0, str(ROOT / 'scripts'))
+import editions  # noqa: E402
+# The edition of the extracted disc (projects/editions.json); a release carries the runtime of 1 edition.
+GAME_ID, EDITION = editions.edition(editions.data_root())
+DOL_SHA256 = EDITION["program_sha256"]
 
 
 def main():
@@ -94,7 +97,8 @@ def main():
             "schema": 1, "version": args.version, "platform": sys.platform,
             "netplay_simulation_id": simulation_identity(target / executable),
             "architecture": platform.machine(), "game_id": GAME_ID,
-            "dol_sha256": DOL_SHA256, "required_free_bytes": 6 * 1024**3,
+            "dol_sha256": DOL_SHA256, "program": EDITION["program"], "edition_name": EDITION["name"],
+            "required_free_bytes": 6 * 1024**3,
             "runtime_files": {p.relative_to(target).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                               for p in sorted(target.rglob('*')) if p.is_file()},
         }, indent=2), encoding="utf-8")

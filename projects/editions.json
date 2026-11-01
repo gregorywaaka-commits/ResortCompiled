@@ -1,0 +1,17 @@
+{
+  "RZTP01": {
+    "name": "Wii Sports Resort (PAL)",
+    "project": "projects/wsr",
+    "program": "sys/main.dol",
+    "program_sha256": "855e4ffe4f8d69d172c44b05ec3a4ddb89645bebfadca41c98effab69111d448",
+    "runtime": "runtime/wsr"
+  },
+  "SP2E01": {
+    "name": "Wii Sports + Wii Sports Resort (USA)",
+    "project": "projects/wsr-sp2e01",
+    "program": "files/US/sys/resort/WiiSports2P.dol",
+    "program_sha256": "74df8d651a8f769b802997df5fa20b393e84f45e4a135aa997c950ffcf55ae7a",
+    "runtime": "work/runtime/wsr-sp2e01",
+    "ported_from": "projects/wsr"
+  }
+}

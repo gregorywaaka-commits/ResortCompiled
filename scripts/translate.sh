@@ -8,16 +8,17 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 WC="$ROOT/external/wiicompiled"
-MANIFEST="$WC/projects/wsr/recomp.yml"
+PROJECT="$(python3 "$ROOT/scripts/editions.py" get project)"
+MANIFEST="$WC/projects/$(basename "$PROJECT")/recomp.yml"
 TRANSLATOR="$WC/translator/src/Translator.Cli/bin/Release/net8.0/Translator.Cli.dll"
 [[ -f "$TRANSLATOR" ]] || { echo "translator not built - run ./setup.sh" >&2; exit 1; }
-[[ -f "$MANIFEST" ]]   || { echo "manifest missing - run ./scripts/analyze.sh" >&2; exit 1; }
+[[ -f "$MANIFEST" ]]   || { echo "manifest missing - run: python3 scripts/configure_project.py" >&2; exit 1; }
 
 grep -qE '^\s+sda_base: 0x' "$MANIFEST" || { echo "sda_base not set in $MANIFEST - fill it in first" >&2; exit 1; }
 ENTRY="$(awk '/entry_points:/{getline; gsub(/[- ]/,""); print; exit}' "$MANIFEST")"
 
 # WSR-native (HLE) sources. Empty until hooks are re-keyed; keeps MKW-address registrations out of the index.
-NATIVE="$ROOT/runtime/wsr/src"
+NATIVE="$ROOT/$(python3 "$ROOT/scripts/editions.py" get runtime)/src"
 GEN="$ROOT/work/generated"
 mkdir -p "$ROOT/work/logs" "$NATIVE" "$GEN"
 LOG="$ROOT/work/logs/translate-$(date +%Y%m%d-%H%M%S).log"

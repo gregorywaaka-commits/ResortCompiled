@@ -1,0 +1,43 @@
+# WiiCompiled project manifest for Wii Sports Resort, USA edition (SP2E01). Made from projects/wsr/recomp.yml.
+# Lives in external/wiicompiled/projects/wsr/ so workspace-relative runtime paths resolve.
+schema_version: 1
+workspace_root: ../..
+
+project:
+  id: wsr-sp2e01
+  display_name: Wii Sports Resort (USA, Wii Sports + Wii Sports Resort disc)
+  game_id: SP2E01
+  region: E
+
+memory:
+  base: 0x80000000
+  size: 0x01800000   # MEM1 (24 MB). MKW uses 0x01A00000 to cover its REL; revisit if WSR loads modules high.
+  sda_base: 0x806FA6C0
+  sda2_base: 0x80700640
+
+inputs:
+  dol:
+    path: work/extracted/files/US/sys/resort/WiiSports2P.dol
+    sha256: 74df8d651a8f769b802997df5fa20b393e84f45e4a135aa997c950ffcf55ae7a
+
+translation:
+  entry_points:
+    - 0x80006310
+  function_map:
+    path: projects/wsr-sp2e01/MAP.txt
+  # First pass: emit runtime traps instead of failing on unsupported instructions.
+  # Must be false before anything ships.
+  allow_unsupported_instructions: true
+
+runtime:
+  # WSR-native (HLE) registrations. Must NOT be WiiCompiled's runtime/src (the default): those hooks are keyed
+  # to MKW addresses and would silently exclude unrelated WSR code from translation.
+  native_registration_root: work/runtime/wsr-sp2e01/src
+  native_abi_directories: []
+
+output:
+  root: work/generated
+  functions: functions
+  runtime_config: RuntimeConfig.h
+  data_initializer: data_sections_init.cpp
+  base_manifest: base/wsr_sp2e01_base_manifest.json

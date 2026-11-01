@@ -1,0 +1,8 @@
+[
+  {
+    "file": "src/hle/os/os_alarm.cpp",
+    "why": "RFL working flag offset (newer RFL in the US program)",
+    "old": "    // Resortcompiled: WSR links an older RFL (Nov 2008) whose manager keeps the flag at +0x1B20\n    // (RFLiIsWorking @ 0x800FFB20: lwz r3,-0x3A78(r13); lwz r3,0x1B20(r3)); MKW's is at +0x1B34. Reading the\n    // MKW offset returned an unrelated non-zero field, so RFLWaitAsync spun forever on a task thread.\n    // The manager pointer lives at r13-0x3A78 = 0x806F6C60 in both games.\n    constexpr uint32_t kRflManagerPtrAddr = 0x806F6C60u;\n    constexpr uint32_t kWorkingFlagOffset = 0x1b20u;",
+    "new": "    // The US program (SP2E01) links the newer RFL. RFLiIsWorking at 0x800FFB20 is\n    // lwz r3,-0x3A60(r13); lwz r3,0x1B34(r3). The manager pointer is at 0x806F6C60.\n    constexpr uint32_t kRflManagerPtrAddr = 0x806F6C60u;\n    constexpr uint32_t kWorkingFlagOffset = 0x1b34u;"
+  }
+]

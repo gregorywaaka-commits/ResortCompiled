@@ -20,8 +20,6 @@ from process_environment import native_library_path
 from mii_data import Database, atomic_bytes, database_path, ensure_database
 from mii_resources import recover_resource, validate_resource
 
-GAME_ID = "RZTP01"
-DOL_SHA256 = "855e4ffe4f8d69d172c44b05ec3a4ddb89645bebfadca41c98effab69111d448"
 IMAGE_EXTENSIONS = {".iso", ".rvz", ".wbfs", ".wia", ".ciso", ".gcz"}
 MII_FILES = ("RFL_Res.dat", "RFL_DB.dat")
 APP_ID = "org.riisorted.launcher"
@@ -67,6 +65,21 @@ def payload_root() -> Path:
     return Path(__file__).resolve().parent / ("payload-win32" if sys.platform == "win32" else "payload")
 
 
+def release_edition() -> tuple[str, str, str, str]:
+    """(game ID, program sha256, program path in the disc data, edition name) of the bundled runtime.
+    A release payload carries one edition (scripts/release/package.py); an older payload is PAL."""
+    try:
+        release = read_json(payload_root() / "release.json")
+    except (OSError, ValueError):
+        release = {}
+    return (release.get("game_id", "RZTP01"),
+            release.get("dol_sha256", "855e4ffe4f8d69d172c44b05ec3a4ddb89645bebfadca41c98effab69111d448"),
+            release.get("program", "sys/main.dol"), release.get("edition_name", "Wii Sports Resort (PAL)"))
+
+
+GAME_ID, DOL_SHA256, PROGRAM, EDITION_NAME = release_edition()
+
+
 def game_executable() -> str:
     return "Resortcompiled.exe" if sys.platform == "win32" else "Resortcompiled"
 
@@ -77,7 +90,7 @@ def installation(path: Path, require_runtime=True) -> dict:
         raise ValueError("This is not a supported launcher installation.")
     if meta.get("game_id") != GAME_ID or meta.get("dol_sha256") != DOL_SHA256:
         raise ValueError("This installation uses a different game revision.")
-    required = [path / "Game/sys/main.dol", path / "Game/sys/boot.bin"]
+    required = [path / "Game" / PROGRAM, path / "Game/sys/boot.bin"]
     if require_runtime:
         required += [path / "Runtime" / game_executable(), path / "Runtime/portable.txt"]
     for item in required:
@@ -273,19 +286,19 @@ def configure_game(path: Path, edition: str):
 
 def verify_game(root: Path):
     boot = root / "sys/boot.bin"
-    dol = root / "sys/main.dol"
+    dol = root / PROGRAM
     if not boot.is_file() or not dol.is_file() or not (root / "files").is_dir():
         raise ValueError("The disc could not be extracted as a Wii game. Choose a complete disc dump.")
     with boot.open("rb") as stream:
         identity = stream.read(6).decode("ascii", errors="replace")
     if identity != GAME_ID:
-        raise ValueError(f"This build supports PAL Wii Sports Resort ({GAME_ID}). "
+        raise ValueError(f"This build supports {EDITION_NAME} ({GAME_ID}). "
                          f"The selected disc identifies itself as {identity}.")
     with dol.open("rb") as stream:
         digest = hashlib.file_digest(stream, "sha256").hexdigest()
     if digest != DOL_SHA256:
         raise ValueError("This Wii Sports Resort revision does not match the supported build. "
-                         "Use an unmodified PAL RZTP01 dump matching the release instructions.")
+                         f"Use an unmodified {GAME_ID} dump matching the release instructions.")
 
 
 class Cancelled(Exception):

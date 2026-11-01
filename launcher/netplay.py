@@ -158,7 +158,7 @@ class OnlineSession:
             return (path if path.is_absolute() else userdata / path).resolve()
         self.nand = resolve(paths.get('nand_root') or 'NAND')
         dvd = resolve(paths.get('dvd_root') or '')
-        if not (dvd / 'sys/main.dol').is_file():
+        if not (dvd / 'sys/boot.bin').is_file():
             raise ValueError('Configure an extracted Wii Sports Resort game before hosting/joining.')
         overlays = [resolve(value) for value in paths.get('overlay_roots', [])]
         if paths.get('retro_rewind_root'):

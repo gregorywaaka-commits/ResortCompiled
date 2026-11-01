@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Resortcompiled - one-time setup for Linux (tested target: Linux Mint / Ubuntu, x86_64 or aarch64).
+# Resortcompiled - one-time setup for Linux (tested target: Linux Mint / Ubuntu, x86_64 or aarch64),
+# or for Windows in an MSYS2 CLANG64 shell (start with scripts/windows/setup.ps1; no apt there).
 #
 # What it does:
 #   1. Installs build dependencies via apt (skip with --no-apt)
@@ -32,8 +33,10 @@ log()  { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*" >&2; }
 die()  { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; exit 1; }
 
+WINDOWS_HOST=0
+[[ "$(uname -o 2>/dev/null)" == "Msys" ]] && { WINDOWS_HOST=1; DO_APT=0; }
 case "$(uname -m)" in
-  x86_64)        DTK_ARCH=linux-x86_64 ;;
+  x86_64)        DTK_ARCH=linux-x86_64; [[ $WINDOWS_HOST -eq 1 ]] && DTK_ARCH=windows-x86_64.exe ;;
   aarch64|arm64) DTK_ARCH=linux-aarch64 ;;
   *) die "unsupported CPU architecture: $(uname -m)" ;;
 esac
@@ -101,8 +104,8 @@ mkdir -p tools/bin
 if [[ ! -x tools/bin/dtk ]]; then
   log "Downloading decomp-toolkit ($DTK_ARCH)"
   curl -fL "https://github.com/encounter/decomp-toolkit/releases/latest/download/dtk-$DTK_ARCH" \
-    -o tools/bin/dtk
-  chmod +x tools/bin/dtk
+    -o "tools/bin/dtk$([[ $WINDOWS_HOST -eq 1 ]] && echo .exe)"
+  chmod +x tools/bin/dtk*
 fi
 log "dtk: $(tools/bin/dtk --version 2>/dev/null || echo '?')"
 
@@ -129,10 +132,12 @@ cat <<EOF
 $(printf '\033[1;32m')Setup complete.$(printf '\033[0m')
 
 Next:
-  1. Put your PAL Wii Sports Resort image (RZTP01; ISO/RVZ/WBFS/WIA/CISO/GCZ) in:  disc/
-  2. ./scripts/extract.sh disc/<your image>        # checks the ID, extracts main.dol etc.
-  3. ./scripts/analyze.sh                           # symbol map, recomp.yml, HLE coverage report
-  4. ./scripts/translate.sh                         # PowerPC -> C++ (first pass)
+  1. Put your own disc image in disc/ (ISO/RVZ/WBFS/WIA/CISO/GCZ). Supported editions:
+$(python3 scripts/editions.py list | sed 's/^/       /')
+  2. ./scripts/extract.sh disc/<your image>        # checks the game ID and the program
+  3. python3 scripts/configure_project.py          # picks the edition's map and runtime
+  4. ./scripts/translate.sh                         # PowerPC -> C++
+  5. ./scripts/build.sh                             # native build -> out/
 
 See README.md for details.
 EOF
