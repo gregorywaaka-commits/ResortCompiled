@@ -2,12 +2,12 @@
 # Format: <hex address> <MKW symbol name as in WiiCompiled's MAP.txt>
 # SDK revision differences mean some functions were restructured (e.g. nandCreate inlined into NANDCreate),
 # so they don't match automatically. Each entry below was checked by disassembly.
-# UNMAPPED 8003FE20 NAND::Create                  # nandIsInitialized, nandIsPrivatePath check, ISFS_CreateFile
-# UNMAPPED 8003FF30 NAND::Private::Create         # same without the private-path check
-# UNMAPPED 80040020 NAND::Private::CreateAsync    # ISFS_CreateFileAsync
-# UNMAPPED 80040660 NAND::CreateDir               # ISFS_CreateDir + private-path check
-# UNMAPPED 80040770 NAND::Private::CreateDir
-# UNMAPPED 80040870 NAND::Private::CreateDirAsync # ISFS_CreateDirAsync
+0x80046210 NAND::Create                  # nandIsInitialized, nandIsPrivatePath check, ISFS_CreateFile
+0x80046290 NAND::Private::Create         # same without the private-path check
+0x80046310 NAND::Private::CreateAsync    # ISFS_CreateFileAsync
+0x80046A20 NAND::CreateDir               # ISFS_CreateDir + private-path check
+0x80046AA0 NAND::Private::CreateDir
+0x80046B20 NAND::Private::CreateDirAsync # ISFS_CreateDirAsync
 # Not present in WSR (not linked): OS::JamMessage, VIGetNextField, contentFastOpenNAND, contentReadNAND
 0x80039BC0 GX::SetVtxDescv               # lwz r5,__GXData; li r7,0; li r8,1; b <loop> (extra nop vs MKW)
 0x8003A3E0 GX::SetVtxAttrFmtv            # MKW's entry stub + body merged into one function in WSR

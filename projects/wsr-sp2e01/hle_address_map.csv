@@ -7,7 +7,7 @@ mkw_addr,symbol,wsr_addr,status,via,runtime_identifier,source
 0x800847C0,nw4r::lyt::detail::DrawQuad,0x801A2FB0,matched,bytes,nw4r__lyt__detail__DrawQuad_800847c0,runtime/src/hle/gx/gx_dl.cpp
 0x80084D20,nw4r::lyt::detail::DrawQuad,0x801A3510,matched,fuzzy:0.54,nw4r__lyt__detail__DrawQuad_80084d20,runtime/src/hle/gx/gx_dl.cpp
 0x800A35E0,nw4r::snd::SoundPlayer::SetVolume,,missing,,SoundPlayerSetVolume_800a35e0,runtime/src/hle/audio/audio.cpp
-0x800BD860,thunk_0x800bc440,UNMAPPED_0x80100890,matched,bytes,RFLiIsWorking_HLE_800bd860,runtime/src/hle/os/os_alarm.cpp
+0x800BD860,thunk_0x800bc440,0x800FFB20,matched,bytes,RFLiIsWorking_HLE_800bd860,runtime/src/hle/os/os_alarm.cpp
 0x80123F88,AIRegisterDMACallback,0x800612F0,matched,bytes,AIRegisterDMACallback_80123f88,runtime/src/hle/audio/audio.cpp
 0x80123FCC,AIInitDMA,0x80061340,matched,bytes,AIInitDMA_80123fcc,runtime/src/hle/audio/audio.cpp
 0x80124048,AIStartDMA,0x800613C0,matched,bytes,AIStartDMA_80124048,runtime/src/hle/audio/audio.cpp
@@ -409,7 +409,7 @@ mkw_addr,symbol,wsr_addr,status,via,runtime_identifier,source
 0x801938FC,,,missing,,NAND_IOS_OpenBody_HLE_801938FC,runtime/src/hle/storage/nand_isfs.cpp
 0x80194158,IOS::IoctlAsync,0x80041AD0,matched,bytes,IOS_IoctlAsync_80194158,runtime/src/hle/ios.cpp
 0x8019F33C,OS::GetConsoleType,0x8004A4A0,matched,fuzzy:0.68,OS__GetConsoleType_8019f33c,runtime/src/hle/os/os_init.cpp
-0x801A00E0,OS::ExceptionInit,UNMAPPED_0x800449C0,matched,name,OS__ExceptionInit_801a00e0,runtime/src/hle/os/os_interrupt.cpp
+0x801A00E0,OS::ExceptionInit,0x8004B320,matched,name,OS__ExceptionInit_801a00e0,runtime/src/hle/os/os_interrupt.cpp
 0x801A04A0,OS::__PSInit,0x8004B6B0,matched,bytes,OS____PSInit_801a04a0,runtime/src/hle/os/os_init.cpp
 0x801A0620,InsertAlarm,0x8004B850,matched,fuzzy:0.99,func_801A0620,runtime/src/hle/os/os_alarm.cpp
 0x801A0870,OS::SetAlarm,0x8004BAA0,matched,fuzzy:0.96,OSSetAlarm_HLE_801a0870,runtime/src/hle/os/os_alarm.cpp
