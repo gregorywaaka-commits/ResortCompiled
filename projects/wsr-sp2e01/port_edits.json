@@ -16,5 +16,11 @@
     "why": "the lines of the US setting.txt",
     "old": "    for (const std::string& line : {std::string(\"AREA=EUR\\r\\n\"), std::string(\"MODEL=RVL-001(EUR)\\r\\n\"),\n             std::string(\"DVD=0\\r\\n\"), std::string(\"MPCH=0x7FFE\\r\\n\"), std::string(\"CODE=LEH\\r\\n\"),\n             \"SERNO=\" + serial + \"\\r\\n\", std::string(\"VIDEO=PAL\\r\\n\"), std::string(\"GAME=EU\\r\\n\")}) {",
     "new": "    for (const std::string& line : {std::string(\"AREA=USA\\r\\n\"), std::string(\"MODEL=RVL-001(USA)\\r\\n\"),\n             std::string(\"DVD=0\\r\\n\"), std::string(\"MPCH=0x7FFE\\r\\n\"), std::string(\"CODE=LU\\r\\n\"),\n             \"SERNO=\" + serial + \"\\r\\n\", std::string(\"VIDEO=NTSC\\r\\n\"), std::string(\"GAME=US\\r\\n\")}) {"
+  },
+  {
+    "file": "src/system_bridge.cpp",
+    "why": "the US menu starts the Resort program with its folder as argv[0]; the program calls DVDChangeDir(argv[0])",
+    "old": "    // start code then moves the arena top below argv. The PAL program takes no arguments.\n    static constexpr const char* kBootArguments[] = {nullptr};",
+    "new": "    // start code then moves the arena top below argv. The US menu starts the Resort program with its folder as\n    // argv[0], and the program calls DVDChangeDir(argv[0]); without it the program looks in /sys/resort.\n    static constexpr const char* kBootArguments[] = {\"/US/sys/resort\", nullptr};"
   }
 ]

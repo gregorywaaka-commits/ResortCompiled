@@ -1,6 +1,7 @@
 #include "system_bridge.h"
 
 #include <cctype>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -592,6 +593,37 @@ void SystemBridge::SeedLowMemDefaults(const Memory::Config& config) {
         Memory::Write32(entry.address, entry.value);
         patchedAny = true;
         ++seededCount;
+    }
+
+    // The start arguments of the program (argc and argv of main). The start code reads them through the BI2 pointer
+    // at 0x800000F4: BI2 + 8 holds the offset of the argument block; the block holds argc, then each argv entry as an
+    // offset from BI2, then the strings. The block sits just below the MEM1 arena top, where a loader puts it; the
+    // start code then moves the arena top below argv. The PAL program takes no arguments.
+    static constexpr const char* kBootArguments[] = {nullptr};
+    if (kBootArguments[0] != nullptr && mem1Size != 0) {
+        uint32_t count = 0;
+        uint32_t stringBytes = 0;
+        for (const char* const* arg = kBootArguments; *arg != nullptr; ++arg) {
+            ++count;
+            stringBytes += static_cast<uint32_t>(std::strlen(*arg)) + 1u;
+        }
+        constexpr uint32_t kBlockOffset = 0x20u;
+        const uint32_t total = kBlockOffset + 4u + count * 4u + stringBytes;
+        const uint32_t bi2 = (mem1ArenaHiDefault - total) & ~0x1Fu;
+        const uint32_t block = bi2 + kBlockOffset;
+        uint32_t text = block + 4u + count * 4u;
+        Memory::Write32(bi2 + 8u, kBlockOffset);
+        Memory::Write32(block, count);
+        for (uint32_t i = 0; i < count; ++i) {
+            Memory::Write32(block + 4u + i * 4u, text - bi2);
+            for (const char* c = kBootArguments[i];; ++c) {
+                Memory::Write8(text++, static_cast<uint8_t>(*c));
+                if (*c == 0) break;
+            }
+        }
+        Memory::Write32(0x800000F4u, bi2);
+        RT_LOG(RT_TAG_RUNTIME) << "Start arguments: " << count << " at 0x" << std::hex << block << std::dec
+                               << " (argv[0] " << kBootArguments[0] << ")" << std::endl;
     }
 
     if (seededCount != 0) {

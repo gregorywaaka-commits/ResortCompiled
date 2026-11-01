@@ -63,6 +63,28 @@ def line_up(pal, oth):
     return pairs
 
 
+def gap_starts(pal, oth, pairs):
+    """{other-build address: PAL function start} for each PAL function start that lies between 2 lined-up functions
+    whose gap has the same length in both builds, where the other build's symbols have no function. A 4-byte stub
+    (a lone blr that a table points at) is often merged into the function before it by dtk."""
+    import bisect
+    starts = [a for a, _, _ in pal]
+    have = {a for a, _, _ in oth}
+    lined = sorted(pairs)
+    out = {}
+    for p1, p2 in zip(lined, lined[1:]):
+        u1, u2 = pairs[p1], pairs[p2]
+        if p2 - p1 != u2 - u1:
+            continue
+        j = bisect.bisect_right(starts, p1)
+        while j < len(starts) and starts[j] < p2:
+            u = u1 + (starts[j] - p1)
+            if u not in have:
+                out[u] = starts[j]
+            j += 1
+    return out
+
+
 def mover(pal, pairs):
     """A function that moves 1 PAL address: to the same offset inside the lined-up function, or None."""
     starts = [a for a, _, _ in pal]
@@ -86,6 +108,8 @@ def main():
     ap.add_argument("--project", type=Path, default=ROOT / "projects" / "wsr")
     ap.add_argument("--symbols", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--map-only", action="store_true",
+                    help="write only MAP.txt (keeps the hand-mapped tables of --out); names of the old MAP.txt stay")
     a = ap.parse_args()
     pal, oth = pal_functions(a.pal_map), other_functions(a.symbols)
     pairs = line_up(pal, oth)
@@ -93,13 +117,25 @@ def main():
     a.out.mkdir(parents=True, exist_ok=True)
     missed = {}
 
-    # MAP.txt: every function of the other build; a lined-up one takes its PAL name.
+    # MAP.txt: every function of the other build, plus the PAL starts inside equal gaps (gap_starts); a lined-up
+    # function takes its PAL name. With --map-only, a name of the old MAP.txt stays where PAL gives none.
     back = {o: p for p, o in pairs.items()}
+    gaps = gap_starts(pal, oth, pairs)
+    back.update(gaps)
     names = {ad: n for ad, n, _ in pal}
+    old = {}
+    if a.map_only and (a.out / "MAP.txt").exists():
+        for line in (a.out / "MAP.txt").read_text().splitlines():
+            p = line.split(None, 1)
+            if len(p) == 2 and not p[1].startswith("0x"):
+                old[int(p[0], 16)] = p[1].strip()
     with open(a.out / "MAP.txt", "w") as fh:
-        for ad, _n, _s in oth:
-            pn = names.get(back.get(ad))
+        for ad in sorted({ad for ad, _n, _s in oth} | set(gaps)):
+            pn = names.get(back.get(ad)) or old.get(ad)
             fh.write("%08x %s\n" % (ad, pn if pn and not pn.startswith("0x") else "0x%08x" % ad))
+    if a.map_only:
+        print("MAP.txt: %d functions, %d from equal gaps" % (len(oth) + len(gaps), len(gaps)))
+        return
 
     def fix_csv(name, cols):
         src = a.project / name
