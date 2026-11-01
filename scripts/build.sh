@@ -37,6 +37,18 @@ if [[ "$(uname -o 2>/dev/null)" == "Msys" ]]; then
   # CMake takes CMAKE_SYSTEM_PROCESSOR from this variable; an MSYS2 login shell can drop it.
   export PROCESSOR_ARCHITECTURE="${PROCESSOR_ARCHITECTURE:-AMD64}"
 fi
+HOST_CMAKE=()
+# The MSYS2 MinGW headers announce the Windows 11 SDK level, and abseil then takes a WinRT time zone path that
+# these headers do not declare. The Windows 10 21H2 level keeps abseil on its portable time zone code.
+[[ $WINDOWS_HOST -eq 1 ]] && HOST_CMAKE+=(-DCMAKE_C_FLAGS=-DNTDDI_VERSION=0x0A00000B -DCMAKE_CXX_FLAGS=-DNTDDI_VERSION=0x0A00000B)
+# C++/WinRT headers (the media-session volume code): the UCRT64 package of MSYS2. Only its winrt/ folder is copied,
+# so the 2 MinGW header trees do not mix.
+if [[ $WINDOWS_HOST -eq 1 ]]; then
+  [[ -f /ucrt64/include/winrt/base.h ]] || die "C++/WinRT missing - run: pacman -S mingw-w64-ucrt-x86_64-cppwinrt"
+  mkdir -p "$ROOT/work/windows/cppwinrt"
+  rsync -a --delete /ucrt64/include/winrt/ "$ROOT/work/windows/cppwinrt/winrt/"
+  HOST_CMAKE+=(-DMKW_CPPWINRT_INCLUDE_DIR="$(cygpath -m "$ROOT/work/windows/cppwinrt")")
+fi
 link_dir() {  # link_dir <target> <link>: a symlink, or on Windows a junction (no admin rights needed)
   if [[ $WINDOWS_HOST -eq 1 ]]; then
     # rmdir removes only the junction, never the folder it points to.
@@ -75,7 +87,7 @@ echo "==> Configuring (first time downloads aurora's dependencies: Dawn, SDL3, i
     -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
     -DRIISORTED_SIMULATION_ID="$SIMULATION_ID" \
     -DMKW_TRANSLATED_COMPILE_JOBS="$TRANSLATED_JOBS" \
-    -DMKW_TRANSLATED_SHARD_MANIFEST="$TREE/generated/build_shards/shards.cmake"
+    -DMKW_TRANSLATED_SHARD_MANIFEST="$TREE/generated/build_shards/shards.cmake" "${HOST_CMAKE[@]}"
 [[ $CONFIGURE_ONLY -eq 1 ]] && { echo "Configured."; exit 0; }
 
 echo "==> Building $TARGET with $JOBS jobs ($TRANSLATED_JOBS for translated shards; ${MEM_GB} GB RAM)"

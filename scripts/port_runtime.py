@@ -247,8 +247,10 @@ def port(a, pal_sda, oth_sda):
                 if new is None:
                     missing.append(m.group(2))
                     return m.group(0)
-                digits, before = m.group(2), line[m.start() - 1:m.start()]
-                lower = digits != digits.upper() or (digits.isdigit() and (before.isalnum() or before == "_"))
+                # A spelling with letters keeps its case. A spelling of digits only becomes upper case, as the
+                # translator's names (func_801FF8EC): so 1 spelling gives 1 result in every file, and a name that a
+                # macro pastes from an address stays the same name at its definition and at each use.
+                lower = m.group(2) != m.group(2).upper()
                 return (m.group(1) or "") + ("%08x" % new if lower else "%08X" % new)
 
             if not comment:

@@ -4,7 +4,7 @@
 #
 # What it does:
 #   1. Unpacks MSYS2 (base archive, not the installer) into <Tools>\msys64 and installs the CLANG64 toolchain
-#      (clang, lld, cmake, ninja, python) and rsync, git, patch, curl, unzip with pacman
+#      (clang, lld, cmake, ninja, python), the C++/WinRT headers and rsync, git, patch, curl, unzip with pacman
 #   2. Installs the .NET 8 SDK for this user into <Tools>\dotnet (Microsoft's dotnet-install.ps1)
 #   3. Runs setup.sh in the CLANG64 shell (WiiCompiled checkout, patches, dtk, fonts, translator)
 # <Tools> is tools\host inside the checkout by default. Safe to re-run.
@@ -31,7 +31,8 @@ Write-Host "==> First start of MSYS2 (keys) and package update"
 Write-Host "==> Installing the CLANG64 toolchain"
 & $Bash -lc ("pacman -S --noconfirm --needed mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-lld " +
     "mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-ninja mingw-w64-clang-x86_64-python " +
-    "mingw-w64-clang-x86_64-python-yaml mingw-w64-clang-x86_64-python-pip rsync git patch curl unzip")
+    "mingw-w64-clang-x86_64-python-yaml mingw-w64-clang-x86_64-python-pip mingw-w64-ucrt-x86_64-cppwinrt " +
+    "rsync git patch curl unzip")
 if ($LASTEXITCODE -ne 0) { throw "pacman failed" }
 
 $Dotnet = Join-Path $Tools "dotnet"
