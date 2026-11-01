@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 die() { echo "[error] $*" >&2; exit 1; }
-# Linux, or Windows in an MSYS2 CLANG64 shell (docs/Windows-native-build.md).
+# Linux, or Windows in an MSYS2 CLANG64 shell (docs/Editions-and-platforms.md).
 WINDOWS_HOST=0
 if [[ "$(uname -o 2>/dev/null)" == "Msys" ]]; then
   WINDOWS_HOST=1
