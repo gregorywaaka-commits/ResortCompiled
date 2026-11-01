@@ -106,6 +106,8 @@ def main():
     ap.add_argument("--bands", required=True, help="PAL address ranges and shift ranges: lo-hi:slo-shi,...")
     ap.add_argument("--pal-table", type=Path, default=Path(__file__).resolve().parent.parent / "projects" / "wsr"
                     / "address_map.csv")
+    ap.add_argument("--min-users-band", type=lambda x: int(x, 0), default=0x2000,
+                    help="a band wider than this needs 2 or more agreeing user functions")
     ap.add_argument("--near", type=lambda x: int(x, 0), default=0x100, help="the reach of an exact row's shift")
     a = ap.parse_args()
     bands = []
@@ -153,7 +155,8 @@ def main():
         line = "%s %-24s users %s -> %s" % (r["mkw_addr"], var, ",".join(f for f, _ in sets) or "-",
                                             " ".join("%08X" % c for c in sorted(common)) or "none")
         report.append(line)
-        if len(common) == 1 and len(sets) >= 1:
+        wide = band[1] - band[0] > a.min_users_band
+        if len(common) == 1 and len(sets) >= (2 if wide else 1):
             c = common.pop()
             r["wsr_addr"] = "0x%08X" % c
             r["how"] += "+users(%d)" % len(sets)
