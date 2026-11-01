@@ -78,3 +78,4 @@ The tools are general: the targets are arguments.
    translate, build, test.
 
 No file from a disc goes in the repo: only addresses, names, hashes and tools.
+`python3 scripts/check_no_game_data.py` checks every tracked file before a push (disc formats, programs, binaries).
