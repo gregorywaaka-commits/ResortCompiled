@@ -56,8 +56,20 @@ For a problem with a missing or wrong file, start the game with the file trace o
 RESORT_DVD_TRACE=1 ./out/Resortcompiled.exe 2> trace.txt
 ```
 
-## 5. What is tested so far
+## 5. Miis
 
-The USA edition was built and started on Windows 11: it boots, passes the MotionPlus check, and plays the opening
-scene at 60 FPS. The sports, the menus, saving, Miis and online play are not tested yet; the PAL edition, Linux and
-macOS were not built in this round.
+The sports need at least 1 Mii. A real Wii keeps them in its NAND; this build keeps them in
+`out/UserData/NAND/shared2/menu/FaceLib/` (`RFL_Res.dat`, the face parts, and `RFL_DB.dat`, the Miis). Copy both
+files from a Dolphin NAND or a Wii NAND dump, use `bash scripts/seed_nand.sh`, or use the launcher's Mii editor.
+The face parts are also inside the System Menu package of your disc's update partition (the launcher reads them
+from there; it needs a dtk that accepts `wad extract -q`).
+
+## 6. What is tested so far
+
+The USA edition was built and played on Windows 11 with keyboard and mouse: the safety screen, the MotionPlus
+check, the opening skydive, the title screen, the main menu with all 12 sports, the Bowling menu, the player count,
+Mii selection with a drawn Mii, the throwing style and the hand, and the saved player list. All ran at about 60 FPS.
+Not tested yet: a match of any sport, the other sports, online play, the PAL edition, Linux and macOS.
+
+Known: the log can show "unmapped guest touch" warnings during the opening skydive (one function reads a few
+wrong addresses; the runtime gives zeros and the game goes on). Report it if you see it at another place.
