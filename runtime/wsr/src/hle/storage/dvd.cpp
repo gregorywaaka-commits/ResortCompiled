@@ -910,6 +910,18 @@ extern "C" int32_t DVDReadPrio_8009AF50(uint32_t fileInfoPtr, uint32_t bufferPtr
     }
 
     CopyToGuestAsDma(bufferPtr, tempBuf.data(), uLength);
+    // RESORT_DVD_TRACE=1 logs each read: the host file, the offset, the length, the guest buffer and the
+    // first 8 bytes.
+    static const bool trace = std::getenv("RESORT_DVD_TRACE") != nullptr;
+    if (trace) {
+        char head[24] = {};
+        for (uint32_t i = 0; i < 8 && i < uLength; ++i) {
+            std::snprintf(head + i * 2, 3, "%02x", tempBuf[i]);
+        }
+        RT_LOG(RT_TAG_DVD) << "read " << HostPathText(entry.hostPath) << " +0x" << std::hex << uOffset
+                           << " len 0x" << uLength << " -> 0x" << bufferPtr << std::dec << " [" << head << "]"
+                           << std::endl;
+    }
 
     Memory::Write32(fileInfoPtr + DVD_CB_OFFSET_TRANSFERRED, uLength);
     Memory::Write32(fileInfoPtr + DVD_CB_OFFSET_STATE, DVD_STATE_END);

@@ -4,5 +4,17 @@
     "why": "RFL working flag offset (newer RFL in the US program)",
     "old": "    // Resortcompiled: WSR links an older RFL (Nov 2008) whose manager keeps the flag at +0x1B20\n    // (RFLiIsWorking @ 0x800FFB20: lwz r3,-0x3A78(r13); lwz r3,0x1B20(r3)); MKW's is at +0x1B34. Reading the\n    // MKW offset returned an unrelated non-zero field, so RFLWaitAsync spun forever on a task thread.\n    // The manager pointer lives at r13-0x3A78 = 0x806F6C60 in both games.\n    constexpr uint32_t kRflManagerPtrAddr = 0x806F6C60u;\n    constexpr uint32_t kWorkingFlagOffset = 0x1b20u;",
     "new": "    // The US program (SP2E01) links the newer RFL. RFLiIsWorking at 0x800FFB20 is\n    // lwz r3,-0x3A60(r13); lwz r3,0x1B34(r3). The manager pointer is at 0x806F6C60.\n    constexpr uint32_t kRflManagerPtrAddr = 0x806F6C60u;\n    constexpr uint32_t kWorkingFlagOffset = 0x1b34u;"
+  },
+  {
+    "file": "include/nand_settings.h",
+    "why": "a new NAND gets the console settings of a US Wii (Dolphin's NTSC-U boot defaults)",
+    "old": "// This recompilation targets the European disc. These are Dolphin's PAL boot\n// defaults; an existing setting.txt always takes precedence, in every region.\ninline std::optional<std::array<uint8_t, 256>> EncodeNew(const std::string& serial) {\n    const Settings identity{{\"SERNO\", serial}, {\"CODE\", \"LEH\"}, {\"AREA\", \"EUR\"}, {\"GAME\", \"EU\"}};",
+    "new": "// This build is the US edition (SP2E01). These are Dolphin's NTSC-U boot\n// defaults; an existing setting.txt always takes precedence, in every region.\ninline std::optional<std::array<uint8_t, 256>> EncodeNew(const std::string& serial) {\n    const Settings identity{{\"SERNO\", serial}, {\"CODE\", \"LU\"}, {\"AREA\", \"USA\"}, {\"GAME\", \"US\"}};"
+  },
+  {
+    "file": "include/nand_settings.h",
+    "why": "the lines of the US setting.txt",
+    "old": "    for (const std::string& line : {std::string(\"AREA=EUR\\r\\n\"), std::string(\"MODEL=RVL-001(EUR)\\r\\n\"),\n             std::string(\"DVD=0\\r\\n\"), std::string(\"MPCH=0x7FFE\\r\\n\"), std::string(\"CODE=LEH\\r\\n\"),\n             \"SERNO=\" + serial + \"\\r\\n\", std::string(\"VIDEO=PAL\\r\\n\"), std::string(\"GAME=EU\\r\\n\")}) {",
+    "new": "    for (const std::string& line : {std::string(\"AREA=USA\\r\\n\"), std::string(\"MODEL=RVL-001(USA)\\r\\n\"),\n             std::string(\"DVD=0\\r\\n\"), std::string(\"MPCH=0x7FFE\\r\\n\"), std::string(\"CODE=LU\\r\\n\"),\n             \"SERNO=\" + serial + \"\\r\\n\", std::string(\"VIDEO=NTSC\\r\\n\"), std::string(\"GAME=US\\r\\n\")}) {"
   }
 ]

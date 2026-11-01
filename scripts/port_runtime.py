@@ -193,12 +193,37 @@ def apply_edits(path, out):
     return len(edits)
 
 
+def sync_tree(src, dst):
+    """Makes dst equal to src. Writes only the files whose bytes differ and removes the files that src does not
+    have, so an unchanged file keeps its time. Returns the number of files written."""
+    written = 0
+    want = {p.relative_to(src) for p in src.rglob("*") if p.is_file()}
+    for rel in sorted(want):
+        new = (src / rel).read_bytes()
+        target = dst / rel
+        if not target.is_file() or target.read_bytes() != new:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(new)
+            written += 1
+    if dst.exists():
+        for p in sorted(dst.rglob("*"), reverse=True):
+            if p.is_file() and p.relative_to(dst) not in want:
+                p.unlink()
+            elif p.is_dir() and not any(p.iterdir()):
+                p.rmdir()
+    return written
+
+
 def port(a, pal_sda, oth_sda):
     table = {}
     for r in csv.DictReader(open(a.to / "runtime_addresses.csv", newline="")):
         table[int(r["pal"], 16)] = int(r["other"], 16) if r["other"].startswith("0x") else None
-    out = a.out
-    out.mkdir(parents=True, exist_ok=True)
+    # The port is made in a staging folder; sync_tree then copies only the changed files to --out, so a build sees
+    # new times only on the files whose text changed.
+    out = a.out.with_name(a.out.name + ".staging")
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
     for sub in ("src", "include", "cmake", "tests"):
         if (out / sub).exists():
             shutil.rmtree(out / sub)
@@ -284,13 +309,15 @@ def port(a, pal_sda, oth_sda):
         if new_text != text:
             f.write_bytes(new_text.encode("utf-8", errors="surrogateescape"))
     edits = apply_edits(a.to / "port_edits.json", out)
+    copied = sync_tree(out, a.out)
+    shutil.rmtree(out)
     rep = ["# Port report", "", "Changed lines: %d. Disabled registrations: %d. Lines with an unresolved address: %d."
            % (changed, len(disabled), len(unresolved)), "Code edits of this edition: %d." % edits, "",
            "## Disabled registrations", ""]
     rep += ["- " + d for d in disabled] + ["", "## Unresolved", ""] + ["- " + u for u in unresolved]
     (a.to / "PORT_REPORT.md").write_text("\n".join(rep) + "\n")
-    print("changed %d lines; disabled %d registrations; %d lines unresolved (report %s)" % (
-        changed, len(disabled), len(unresolved), a.to / "PORT_REPORT.md"))
+    print("changed %d lines; disabled %d registrations; %d lines unresolved; %d files written (report %s)" % (
+        changed, len(disabled), len(unresolved), copied, a.to / "PORT_REPORT.md"))
 
 
 def main():
