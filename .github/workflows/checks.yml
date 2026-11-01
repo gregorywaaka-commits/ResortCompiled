@@ -1,0 +1,53 @@
+# The checks that need no game files: they run on every push, on Linux and on Windows, so a change is tested on
+# both systems without a game disc. The full game build needs each player's own extracted disc, so it is not here.
+name: checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tools
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Upstream branch for the PAL check
+        run: git fetch --no-tags https://github.com/redluigi323/ResortCompiled.git main:refs/remotes/upstream/main
+      - name: No game data in the repository
+        run: python3 scripts/check_no_game_data.py
+      - name: The PAL edition is unchanged where it matters
+        run: python3 scripts/check_pal_unchanged.py --base upstream/main
+      - name: The editions
+        run: python3 scripts/editions.py list
+      - name: The shell scripts parse
+        run: for f in setup.sh scripts/*.sh; do bash -n "$f"; done
+      - name: Rollback tests
+        run: python3 scripts/test_rollback.py
+      - name: Netplay pipeline tests
+        run: python3 scripts/test_netplay_pipeline.py
+      - name: Motion math tests
+        run: |
+          clang++ -std=c++17 -I runtime/wsr/include runtime/wsr/tests/resort_motion_tests.cpp -o /tmp/motion_math
+          /tmp/motion_math
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: No game data in the repository
+        run: python scripts/check_no_game_data.py
+      - name: The editions
+        run: python scripts/editions.py list
+      - name: Rollback tests
+        run: python scripts/test_rollback.py
