@@ -173,6 +173,22 @@ def make_table(a, pal_sda):
     print("%d addresses; %d unresolved -> %s" % (len(rows), len(bad), a.to / "runtime_addresses.csv"))
     for addr, how in bad:
         print("  %08X %s" % (addr, how))
+    # A hook on a function whose size differs between the 2 builds may sit on the wrong function (a newer library
+    # adds or merges functions): check each one by hand in the other build's code.
+    pal_size = {p: s for p, _n, s in pal_funcs}
+    oth_size = {o: s for o, _n, s in align_map.other_functions(a.symbols)}
+    table_of = {addr: new for addr, new, _how in rows}
+    for f in runtime_files(a.runtime):
+        for _n, line in active_lines(f.read_text(errors="replace")):
+            m = REG_LINE_RE.match(line) and ADDR_RE.search(line)
+            if not m:
+                continue
+            pal = int(m.group(2), 16)
+            new = table_of.get(pal)
+            if new is not None and pal in pal_size and pal_size[pal] != oth_size.get(new):
+                print("  check by hand: hook %08X -> %08X, size %#x -> %s (%s)" % (
+                    pal, new, pal_size[pal], hex(oth_size[new]) if new in oth_size else "no function start",
+                    f.relative_to(a.runtime)))
 
 
 def apply_edits(path, out):

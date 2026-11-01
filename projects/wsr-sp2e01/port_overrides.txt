@@ -2,7 +2,7 @@
 # "KEEP" keeps the PAL address. Read by scripts/port_runtime.py --make-table.
 
 # Checked in the US code:
-800FF564 800FFB20   # RFLiIsWorking body (r13 RFL manager, +0x1B34)
+800FF564 800FF930   # RFLiIsWorking body (r13 RFL manager, +0x1B20, as in PAL); its thunk is 0x80100D20
 806F4C70 806F6B88   # MotionPlus solver work pointer (r13): its 34 users step by the 3504-byte channel size
 807083D0 8070A4B0   # WPAD control block pointers: loaded by WPADGetMplsCalibration, WPADControlMpls, WPADGetMplsStatus
 8076A718 80770240   # KPAD state base: loaded by KPADReadEx and KPADGetUnifiedWpadStatus

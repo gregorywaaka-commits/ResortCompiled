@@ -7,7 +7,7 @@ mkw_addr,symbol,wsr_addr,status,via,runtime_identifier,source
 0x800847C0,nw4r::lyt::detail::DrawQuad,0x801A2FB0,matched,bytes,nw4r__lyt__detail__DrawQuad_800847c0,runtime/src/hle/gx/gx_dl.cpp
 0x80084D20,nw4r::lyt::detail::DrawQuad,0x801A3510,matched,fuzzy:0.54,nw4r__lyt__detail__DrawQuad_80084d20,runtime/src/hle/gx/gx_dl.cpp
 0x800A35E0,nw4r::snd::SoundPlayer::SetVolume,,missing,,SoundPlayerSetVolume_800a35e0,runtime/src/hle/audio/audio.cpp
-0x800BD860,thunk_0x800bc440,0x800FFB20,matched,bytes,RFLiIsWorking_HLE_800bd860,runtime/src/hle/os/os_alarm.cpp
+0x800BD860,thunk_0x800bc440,0x80100D20,matched,bytes,RFLiIsWorking_HLE_800bd860,runtime/src/hle/os/os_alarm.cpp
 0x80123F88,AIRegisterDMACallback,0x800612F0,matched,bytes,AIRegisterDMACallback_80123f88,runtime/src/hle/audio/audio.cpp
 0x80123FCC,AIInitDMA,0x80061340,matched,bytes,AIInitDMA_80123fcc,runtime/src/hle/audio/audio.cpp
 0x80124048,AIStartDMA,0x800613C0,matched,bytes,AIStartDMA_80124048,runtime/src/hle/audio/audio.cpp

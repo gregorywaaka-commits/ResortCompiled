@@ -13,7 +13,7 @@ mkw_addr,wsr_addr,how,mkw_symbol,uses
 0x80084D20,0x801A3510,func~0.54,nw4r::lyt::detail::DrawQuad,
 0x800A35E0,,text,nw4r::snd::SoundPlayer::SetVolume,4
 0x800AF180,0x8010BB00,func,nw4r::ut::List_GetNext,
-0x800BD860,0x800FFB20,"func+code(RFLiIsWorking body: r13 manager, +0x1B34)",thunk_0x800bc440,
+0x800BD860,0x80100D20,"func+code(the 4-byte thunk before RFLiStartWorking 0x80100D30; b 0x800FF930, which reads the RFL manager +0x1B20)",thunk_0x800bc440,
 0x80123F88,0x800612F0,func,AIRegisterDMACallback,
 0x80123FCC,0x80061340,func,AIInitDMA,
 0x80124048,0x800613C0,func,AIStartDMA,
