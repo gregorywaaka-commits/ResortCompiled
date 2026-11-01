@@ -22,5 +22,11 @@
     "why": "the US menu starts the Resort program with its folder as argv[0]; the program calls DVDChangeDir(argv[0])",
     "old": "    // start code then moves the arena top below argv. The PAL program takes no arguments.\n    static constexpr const char* kBootArguments[] = {nullptr};",
     "new": "    // start code then moves the arena top below argv. The US menu starts the Resort program with its folder as\n    // argv[0], and the program calls DVDChangeDir(argv[0]); without it the program looks in /sys/resort.\n    static constexpr const char* kBootArguments[] = {\"/US/sys/resort\", nullptr};"
+  },
+  {
+    "file": "src/resort_wiimote_kbm.cpp",
+    "why": "the newer KPAD of the US program keeps 0x688 bytes per channel (mulli 0x688); KPADEnableMpls and KPADDisableMpls (0x800CCF10, 0x800CCF40) write the requested mode at +0x679",
+    "old": "constexpr uint32_t kKpadStateStride = 0x668u;\nconstexpr uint32_t kKpadMplsRequestedMode = 0x659u; // byte written by KPADEnableMpls / KPADDisableMpls",
+    "new": "constexpr uint32_t kKpadStateStride = 0x688u;       // the newer KPAD of the US program: 0x20 bytes more\nconstexpr uint32_t kKpadMplsRequestedMode = 0x679u; // byte written by KPADEnableMpls / KPADDisableMpls"
   }
 ]
